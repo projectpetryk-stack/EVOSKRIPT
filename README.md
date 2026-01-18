@@ -1,31 +1,39 @@
 
-# 🚀 SalesFlow Pro - Інструкція з розгортання на GitHub
+# 🚀 SalesFlow Pro - Deployment Guide / Інструкція з розгортання
 
-Цей додаток є статичним сайтом, який використовує ES-модулі. Його дуже легко розгорнути на **GitHub Pages**.
+SalesFlow Pro is a dynamic sales script builder. Follow these steps to host it on **GitHub Pages**.
 
-## 📋 Кроки для розгортання
+## 📋 Detailed Deployment Steps / Покрокова інструкція
 
-### 1. Створення репозиторію
-1. Створіть новий репозиторій на своєму GitHub-аккаунті (наприклад, `sales-flow-pro`).
-2. Завантажте всі файли проєкту (`index.html`, `index.tsx`, `App.tsx`, `types.ts`, `constants.ts`, `metadata.json`, `package.json`, `services/`, `components/`) до репозиторію.
+### 1. Change Visibility to Public / Зробити репозиторій публічним
+GitHub Pages requires your repository to be **Public**. 
 
-### 2. Активація GitHub Pages
-1. Перейдіть у вкладку **Settings** вашого репозиторію.
-2. У лівому меню оберіть **Pages**.
-3. У секції "Build and deployment" оберіть джерело (Source): **Deploy from a branch**.
-4. Виберіть гілку `main` (або `master`) та папку `/ (root)`. Натисніть **Save**.
-5. Зачекайте 1-2 хвилини, і GitHub надасть вам посилання (наприклад, `https://username.github.io/sales-flow-pro/`).
+1.  **Open Settings**: Click the **Settings** (Налаштування ⚙️) tab at the top.
+2.  **General Tab**: Ensure you are in the **General** (Загальне) section in the left sidebar.
+3.  **Find Danger Zone**: Scroll to the bottom to the **"Danger Zone"** (Зона небезпеки).
+4.  **Click Change Visibility**: Click **Change visibility** (Змінити видимість).
+5.  **Select Make Public**: Choose **Make public** (Зробити публічним).
+6.  **Confirm**: Follow the prompts to type your repo name and confirm.
 
-### ⚠️ Важливо: Безпека API Ключа
-Ваш додаток використовує Gemini API через `process.env.API_KEY`. При розгортанні на GitHub Pages:
-- GitHub Pages є **публічним хостингом**. Якщо ви впишете ключ прямо в код, його зможуть побачити інші.
-- **Рекомендація**: Для безпечного використання у продакшні рекомендується використовувати проксі-сервер або GitHub Actions для підстановки ключа під час збірки.
-- Для швидкого тестування ви можете тимчасово замінити `process.env.API_KEY` у файлі `services/geminiService.ts` на ваш реальний ключ, але **ніколи не публікуйте його у відкритих репозиторіях**.
+### 2. Enable GitHub Pages / Увімкнути GitHub Pages
+**Do not use "Deploy keys" (Розгортання ключів)**. Use the steps below:
 
-## 🛠 Локальний запуск
-Якщо ви хочете запустити додаток локально:
-1. Використовуйте будь-який статичний сервер, наприклад:
-   ```bash
-   npx serve .
-   ```
-2. Відкрийте `http://localhost:3000` у браузері.
+1.  In **Settings** (Налаштування), click on **Pages** (Сторінки) in the left sidebar.
+2.  Under **Build and deployment** > **Branch**:
+    - Select `main` (or `master`) from the dropdown.
+    - Ensure folder is set to `/(root)`.
+3.  Click **Save** (Зберегти).
+4.  Wait 1-2 minutes. A link will appear: **"Your site is live at..."**. Click it to open your app!
+
+## ⚠️ Important: API Key Security
+- This app uses `process.env.API_KEY`.
+- **Note**: Since the site is public, anyone can see the source code. For real production, use a proxy. For personal testing, you can temporarily add your key to `services/geminiService.ts`.
+
+## 🛠 Features
+- **Dynamic Switching**: Change scripts instantly.
+- **AI-Powered Hints**: Real-time sales advice.
+- **Note Taking**: Record key points and export to `.txt`.
+
+## 💻 Local Development
+1. Run `npx serve .`
+2. Open `http://localhost:3000`.

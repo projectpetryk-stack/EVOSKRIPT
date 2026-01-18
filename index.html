@@ -1,11 +1,13 @@
 
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SalesFlow Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Babel standalone to compile TSX in the browser for simple static hosting -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -40,5 +42,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
+    <!-- Load index.tsx as a Babel script so it compiles TSX in real-time -->
+    <script type="text/babel" data-type="module" src="./index.tsx"></script>
 </body>
 </html>
