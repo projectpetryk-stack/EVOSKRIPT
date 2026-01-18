@@ -4,16 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SalesFlow Pro - Конструктор Скриптів</title>
+    <title>SalesFlow Pro - EVO Cosmetology Edition</title>
     
-    <!-- Стилі -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Babel для компіляції JSX в браузері -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Налаштування імпортів (ESM) -->
     <script type="importmap">
 {
   "imports": {
@@ -32,6 +28,7 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         .animate-fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -40,75 +37,101 @@
     <div id="root">
         <div class="h-screen w-screen flex items-center justify-center bg-white flex-col gap-4">
             <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-gray-500 font-medium">Завантаження інтерфейсу...</p>
+            <p class="text-gray-500 font-medium">Завантаження скриптів EVO Cosmetology...</p>
         </div>
     </div>
 
-    <!-- Основний скрипт програми -->
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useMemo, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
             Search, Moon, Sun, Timer as TimerIcon, Play, Pause, RotateCcw, 
             ChevronRight, Zap, MessageSquare, Download, Star, Type, 
-            FileText, Lightbulb, Trash2, Plus, AlertCircle
+            FileText, Lightbulb, Trash2, Plus, AlertCircle, ShoppingBag, Layers
         } from 'lucide-react';
         import { GoogleGenAI } from "@google/genai";
 
-        // --- ДАНІ ТА КОНСТАНТИ ---
+        // --- ОНОВЛЕНІ ДАНІ ЗІ СКРІНШОТІВ ---
         const INITIAL_SCRIPTS = [
             {
-                id: '1',
-                title: 'Холодний дзвінок (B2B)',
-                category: 'Етап продажу',
+                id: 'evo-main',
+                title: 'Алгоритм продажу EVO',
+                category: 'Загальний',
                 steps: [
-                    { id: 's1', label: 'Привітання', content: 'Добрий день! Мене звати [Ім’я], компанія SalesFlow. Я телефоную, щоб запропонувати рішення для вашої команди...', hint: 'Говоріть впевнено, тримайте темп.' },
-                    { id: 's2', label: 'Кваліфікація', content: 'Скажіть, скільки менеджерів зараз працює у вашому відділі? Як ви контролюєте скрипти?', hint: 'Ставте відкриті питання.' },
-                    { id: 's3', label: 'Закриття', content: 'Пропоную зустрітися на 15 хвилин у вівторок. Об 11:00 буде зручно?', hint: 'Використовуйте техніку вибору без вибору.' }
+                    { id: 'e1', label: 'Контакт', content: 'Доброго дня [Ім’я клієнта], мене звати [Ваше Ім’я], я менеджер компанії EVO Cosmetology. Наша адміністраторка Каріна передала на мене Ваш запит на співпрацю щодо косметики Анубіс Барселона. Мені потрібно 7-8 хв, щоб поставити Вам декілька запитань. Добре?', hint: 'Пауза після "Добре?" — дочекайтеся згоди.' },
+                    { id: 'e2', label: 'Потреби', content: '1. З якими запитами клієнти приходять зараз?\n2. Які процедури найбільш прибуткові?\n3. ТОП-3 процедури у вашому кабінеті?\n4. З чим клієнти приходять повторно?\n5. Чи продаєте домашній догляд?\n6. Звідки трафік (Insta/FB/рек)?\n7. Чи ведете сторінку самі чи СММ?\n8. Чи актуальний готовий контент + До/Після?\n9. З якими брендами працюєте?\n10. Що хотіли б покращити?\n11. Що ключове: склад, результат чи сервіс?', hint: 'Уважно фіксуйте відповіді у нотатках справа.' },
+                    { id: 'e3', label: 'Бренд', content: 'Anubis Barcelona — бренд з Барселони, на ринку 43 роки, представлений у 40 країнах. Понад 100 запатентованих формул. Ми пропонуємо: готові протоколи, потужну підтримку (100+ вебінарів) та маркетинг "під ключ" (фото/відео до і після).', hint: 'Акцент на тому, що почати заробляти дуже просто.' },
+                    { id: 'e4', label: 'Економіка', content: '1. Процедури: собівартість від 3€, заробіток до 800%.\n2. Домашній догляд: рентабельність 100%. Ми суворо контролюємо ціни в інтернеті, демпінг відсутній — клієнт купить тільки у вас.\n3. Сервіс: товар завжди в наявності + брендована продукція.', hint: 'Запитайте: "Які з цих умов для вас зараз найважливіші?"' },
+                    { id: 'e5', label: 'Закриття', content: 'Пропоную сформувати замовлення на протокол, щоб ви особисто відчули ефективність. При замовленні сьогодні або протягом 3 днів — вітальний бонус -20% знижки! Повна вартість 350€, а зі знижкою — лише 280€ (економія 70€). Плюс безкоштовна доставка Новою Поштою. Куди зручніше надіслати реквізити?', hint: 'Не бійтеся прямого заклику до дії.' }
                 ]
             },
             {
-                id: '2',
-                title: 'Презентація Pro-версії',
-                category: 'Продукт',
+                id: 'proto-peel',
+                title: 'Подвійний пілінг',
+                category: 'Пілінги',
                 steps: [
-                    { id: 'p1', label: 'Проблема', content: 'Більшість компаній втрачають до 30% лідів через відсутність швидких підказок...', hint: 'Тисніть на "біль" клієнта.' },
-                    { id: 'p2', label: 'Рішення', content: 'Наш інструмент дозволяє бачити скрипт та AI-поради прямо під час розмови.', hint: 'Показуйте вигоду, а не функції.' }
+                    { id: 'pp1', label: 'Опис', content: 'Протокол "Подвійний пілінг" на основі лінійки AnubisMed. Зменшення глибини зморшок до 62%, ліфтинг-ефект +28%. Ретиноїдні протоколи дають зменшення пігментації вже через 7 днів. Це курсові процедури, що гарантують завантаженість кабінету на 1-2 місяці наперед.', hint: 'Одна процедура перекриває вартість цілого флакона коктейлю.' },
+                    { id: 'pp2', label: 'Підготовка', content: 'Етап 1: Підготовка. Протираємо шкіру Degreasing Lotion — це знежирюючий лосьйон для ідеальної підготовки до пілінгу.', hint: 'Якісне знежирення — запорука рівномірного проникнення кислот.' },
+                    { id: 'pp3', label: 'Шари 1-2', content: 'Етап 2: Перший шар (Провідник). Наносимо Azelaic Skin Peel — азелаїновий пілінг, який працює як кератолітик і відкриває доступ вглиб.\n\nЕтап 3: Другий шар (Актив). Через 10 хвилин, не змиваючи, наносимо Resorcinol Skin Peel — потужний пілінг-коктейль з резорцином для ліфтингу та освітлення.', hint: 'Resorcinol наноситься поверх Azelaic!' },
+                    { id: 'pp4', label: 'Фініш', content: 'Етап 4: Нейтралізація. Використовуємо Skin Neutralizer — спрей для миттєвої зупинки реакції кислот.\n\nЕтап 5: Відновлення. Закриваємо процедуру HA+ Cream — відновлювальний крем з гіалуроновою кислотою та SPF 50+.', hint: 'Заробіток менеджера/клієнта 400%, протокол на 10 процедур.' }
+                ]
+            },
+            {
+                id: 'proto-fresh',
+                title: 'Протокол Fresh Therapy',
+                category: 'Протоколи',
+                steps: [
+                    { id: 'f1', label: 'Опис', content: 'Fresh Therapy на базі лінії Polivitaminic. Клінічно доведена стратегія омолодження. Синтез власного колагену +239%, еластину +250%. Результат тестів in vivo: зменшення зморшок на 6.7% та сяйво на 8.5% вже після курсу.', hint: 'Шкіра візуально молодшає на 10-12 років.' },
+                    { id: 'f2', label: 'Етап 1-2', content: '1. Очищення: Cleansing Mousse (мус з PHA) — полірує та зволожує.\n2. Тонізація: Antioxidant Toner — вітамінізуючий тонік для відновлення pH.', hint: 'Миттєвий ефект "на вихід" (фотошоп).' },
+                    { id: 'f3', label: 'Етап 3', content: 'Активне насичення: Antioxidant Booster — висококонцентрована сироватка в ампулі (5.5 мл). Стовбурові клітини апельсина та стабільний Вітамін С.', hint: 'Не подразнює навіть чутливу шкіру.' },
+                    { id: 'f4', label: 'Етап 4-5', content: '4. Зона очей: C-Lift Eye Contour — ліфтинг-гель з пептидами.\n5. Фіксація: Antioxidant Mask — кремова маска для глибокого зволоження. Фінішуємо Antioxidant Cream.', hint: 'Запитайте: "Як для вас таке рішення?"' }
+                ]
+            },
+            {
+                id: 'proto-stop',
+                title: 'Протокол Stop Acne',
+                category: 'Протоколи',
+                steps: [
+                    { id: 's1', label: 'Опис', content: 'Regul Oil Line на основі Tioxolone (органічна сірка). Кількість папул/пустул -42%, комедонів -38%, жирність -27% за 4 тижні. Ви продаєте гарантований результат, а не просто процес.', hint: 'Без неприємного запаху сірки!' },
+                    { id: 's2', label: 'Етап 1-3', content: '1. Демакіяж: Cleansing Cream (хміль та лопух).\n2. Тонізація: Lotion Purificant — антисептик.\n3. Глибока ексфоліація: Shining Line Combined Peel — кислотний пілінг, що розм’якшує пори.', hint: 'Повноцінна 6-етапна процедура.' },
+                    { id: 's3', label: 'Етап 4-5', content: '4. Холодне гідрування: Aloe Vera Gel — підготовка до чистки.\n5. Чистка: Concentrate Equilibrant — лікувальний концентрат з Тіоксолоном. Стерилізує пори.', hint: 'Вбиває бактерії миттєво.' },
+                    { id: 's4', label: 'Етап 6', content: 'Заспокоєння: Argi-mask white (каолін) — знімає почервоніння. Фініш: Hydro-Equilibrant Serum + SPF.', hint: 'Окупиться миттєво. Готові розглянути стартовий набір?' }
+                ]
+            },
+            {
+                id: 'proto-skin',
+                title: 'Фракційна мезотерапія',
+                category: 'Мезотерапія',
+                steps: [
+                    { id: 'm1', label: 'Опис', content: 'Skin Pen (AnubisMed). Космецевтика на межі медицини. Конструктор: ви самі змішуєте коктейлі під проблему (ліфтинг, пігментація, волосся). Ефект ін’єкцій без болю та синців.', hint: 'Використовуємо пептиди нового покоління Matrixyl.' },
+                    { id: 'm2', label: 'Активація', content: 'Етап 1: Degreasing Lotion.\nЕтап 2: Активація (Бустер) — Azelaic Skin Peel (0.5 мл). М’який пілінг-провідник, що стимулює кровообіг та посилює дію коктейлів.', hint: 'Стимуляція перед введенням активів.' },
+                    { id: 'm3', label: 'Коктейлі', content: 'Етап 3: Мезо-коктейль. Змішуємо в шприці Skin Lifting (ДМАЕ) або Skin Rejuvenating (фактори росту). Вводимо апаратом Skin Pen — вбиваємо сироватку на потрібну глибину.', hint: 'Коктейль підбирається індивідуально.' },
+                    { id: 'm4', label: 'Фініш', content: 'Етап 4: Заспокоєння та захист. HA+ Cream та Protection Fluid 50+ — сонцезахисна емульсія.', hint: 'Інструмент для підвищення чека та статусу клініки.' }
                 ]
             }
         ];
 
-        // --- КОМПОНЕНТИ ---
-
         const Timer = () => {
             const [seconds, setSeconds] = useState(0);
             const [isActive, setIsActive] = useState(false);
-
             useEffect(() => {
                 let interval;
-                if (isActive) {
-                    interval = setInterval(() => setSeconds(s => s + 1), 1000);
-                } else {
-                    clearInterval(interval);
-                }
+                if (isActive) interval = setInterval(() => setSeconds(s => s + 1), 1000);
+                else clearInterval(interval);
                 return () => clearInterval(interval);
             }, [isActive]);
-
             const format = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
-
             return (
-                <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border shadow-sm">
-                    <span className="font-mono font-bold text-blue-600 flex items-center gap-2">
-                        <TimerIcon size={16} /> {format(seconds)}
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border shadow-sm scale-90 sm:scale-100">
+                    <span className="font-mono font-bold text-blue-600 flex items-center gap-1.5">
+                        <TimerIcon size={14} /> {format(seconds)}
                     </span>
-                    <div className="flex gap-1">
-                        <button onClick={() => setIsActive(!isActive)} className="p-1 hover:bg-gray-100 rounded">
-                            {isActive ? <Pause size={14} /> : <Play size={14} />}
-                        </button>
-                        <button onClick={() => {setSeconds(0); setIsActive(false);}} className="p-1 hover:bg-gray-100 rounded">
-                            <RotateCcw size={14} />
-                        </button>
-                    </div>
+                    <button onClick={() => setIsActive(!isActive)} className="p-1 hover:bg-gray-100 rounded">
+                        {isActive ? <Pause size={12} /> : <Play size={12} />}
+                    </button>
+                    <button onClick={() => {setSeconds(0); setIsActive(false);}} className="p-1 hover:bg-gray-100 rounded">
+                        <RotateCcw size={12} />
+                    </button>
                 </div>
             );
         };
@@ -121,8 +144,8 @@
             const [search, setSearch] = useState("");
             const [dark, setDark] = useState(false);
             const [fontSize, setFontSize] = useState(18);
-            const [aiHint, setAiHint] = useState(null);
             const [loadingAi, setLoadingAi] = useState(false);
+            const [aiHint, setAiHint] = useState(null);
 
             const filtered = INITIAL_SCRIPTS.filter(s => s.title.toLowerCase().includes(search.toLowerCase()));
 
@@ -134,80 +157,96 @@
 
             const getAiAdvice = async () => {
                 const key = window.process?.env?.API_KEY;
-                if (!key) {
-                    setAiHint("API ключ не знайдено.");
-                    return;
-                }
+                if (!key) { setAiHint("Потрібен API ключ для порад."); return; }
                 setLoadingAi(true);
                 try {
                     const ai = new GoogleGenAI({ apiKey: key });
                     const res = await ai.models.generateContent({
                         model: 'gemini-3-flash-preview',
-                        contents: `Порада для кроку: ${activeScript.steps[stepIdx].content}. Відповідь клієнта: ${noteText || 'слухає'}. Дай коротку пораду (10 слів).`
+                        contents: `Ти асистент менеджера EVO Cosmetology. Крок: ${activeScript.steps[stepIdx].label}. Контент: ${activeScript.steps[stepIdx].content}. Останні нотатки менеджера: ${noteText}. Дай коротку пораду (до 15 слів), як переконати клієнта або що відповісти на заперечення.`
                     });
                     setAiHint(res.text);
-                } catch (e) { setAiHint("Помилка AI."); }
+                } catch (e) { setAiHint("AI недоступний."); }
                 setLoadingAi(false);
+            };
+
+            const handleExport = () => {
+                const content = notes.map(n => `[${n.time}] ${n.isKey ? 'КЛЮЧОВЕ: ' : ''}${n.content}`).join('\n');
+                const blob = new Blob([content], {type: 'text/plain'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `EVO_Sales_Notes_${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
             };
 
             return (
                 <div className={`h-screen flex flex-col ${dark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-slate-900'} transition-colors duration-300`}>
-                    <header className={`h-16 px-6 flex items-center justify-between border-b shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200 shadow-sm'}`}>
+                    <header className={`h-16 px-4 sm:px-6 flex items-center justify-between border-b shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200 shadow-sm'}`}>
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">S</div>
-                            <span className="font-bold text-lg tracking-tight hidden sm:block">SalesFlow <span className="text-blue-600">Pro</span></span>
+                            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">E</div>
+                            <span className="font-bold text-base sm:text-lg tracking-tight">EVO <span className="text-blue-600">Scripts</span></span>
                         </div>
-                        <div className="flex-1 max-w-md mx-6 relative">
+                        <div className="flex-1 max-w-xs sm:max-w-md mx-4 relative hidden sm:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                             <input 
                                 value={search} onChange={e => setSearch(e.target.value)}
-                                placeholder="Шукати скрипт..."
-                                className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm outline-none border transition-all ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-transparent focus:bg-white focus:border-blue-400'}`}
+                                placeholder="Швидкий пошук..."
+                                className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm outline-none border ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-transparent focus:bg-white focus:border-blue-400'}`}
                             />
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <Timer />
-                            <button onClick={() => setDark(!dark)} className="p-2 hover:bg-gray-100 rounded-full">
-                                {dark ? <Sun size={20} /> : <Moon size={20} className="text-gray-500" />}
+                            <button onClick={() => setDark(!dark)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                {dark ? <Sun size={18} /> : <Moon size={18} className="text-gray-500" />}
                             </button>
                         </div>
                     </header>
 
                     <div className="flex-1 flex overflow-hidden">
-                        <aside className={`w-64 border-r p-4 hidden md:flex flex-col shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Каталог</h3>
-                            <div className="space-y-1">
-                                {filtered.map(s => (
-                                    <button 
-                                        key={s.id} onClick={() => {setActiveScript(s); setStepIdx(0); setAiHint(null);}}
-                                        className={`w-full text-left p-2.5 rounded-lg text-sm font-medium transition-all ${activeScript.id === s.id ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-100'}`}
-                                    >
-                                        {s.title}
-                                    </button>
+                        <aside className={`w-64 border-r p-4 hidden lg:flex flex-col shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+                            <div className="space-y-5 overflow-y-auto custom-scrollbar pr-2">
+                                {['Загальний', 'Пілінги', 'Протоколи', 'Мезотерапія'].map(cat => (
+                                    <div key={cat}>
+                                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">{cat}</h3>
+                                        <div className="space-y-1">
+                                            {filtered.filter(s => s.category === cat).map(s => (
+                                                <button 
+                                                    key={s.id} onClick={() => {setActiveScript(s); setStepIdx(0); setAiHint(null);}}
+                                                    className={`w-full text-left p-2.5 rounded-lg text-[13px] font-medium transition-all ${activeScript.id === s.id ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-100'}`}
+                                                >
+                                                    {s.title}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </aside>
 
-                        <main className="flex-1 flex flex-col overflow-hidden relative">
-                            <div className={`px-8 py-4 border-b flex items-center justify-between ${dark ? 'bg-slate-800 border-slate-700' : 'bg-white'}`}>
+                        <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
+                            <div className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${dark ? 'bg-slate-800/50 border-slate-700' : 'bg-white'}`}>
                                 <div>
-                                    <span className="text-[10px] font-bold text-blue-500 uppercase">{activeScript.category}</span>
-                                    <h2 className="text-xl font-bold">{activeScript.title}</h2>
+                                    <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">{activeScript.category}</span>
+                                    <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                                        {activeScript.category === 'Пілінги' && <Layers size={18} className="text-blue-500" />}
+                                        {activeScript.title}
+                                    </h2>
                                 </div>
                                 <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                                    <button onClick={() => setFontSize(f => Math.max(12, f-2))} className="p-1 hover:bg-white rounded"><Type size={14} /></button>
-                                    <span className="text-xs font-mono font-bold w-8 text-center">{fontSize}</span>
-                                    <button onClick={() => setFontSize(f => Math.min(32, f+2))} className="p-1 hover:bg-white rounded"><Type size={14} /></button>
+                                    <button onClick={() => setFontSize(f => Math.max(12, f-2))} className="p-1.5 hover:bg-white rounded transition-shadow"><Type size={14} /></button>
+                                    <span className="text-xs font-mono font-bold w-6 text-center">{fontSize}</span>
+                                    <button onClick={() => setFontSize(f => Math.min(32, f+2))} className="p-1.5 hover:bg-white rounded transition-shadow"><Type size={14} /></button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-transparent">
+                            <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
                                 <div className="max-w-3xl mx-auto space-y-6">
                                     <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                                         {activeScript.steps.map((s, i) => (
                                             <button 
                                                 key={s.id} onClick={() => {setStepIdx(i); setAiHint(null);}}
-                                                className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${stepIdx === i ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-200 text-gray-500'}`}
+                                                className={`px-4 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all border ${stepIdx === i ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-gray-400 border-gray-200'}`}
                                             >
                                                 {i+1}. {s.label}
                                             </button>
@@ -215,25 +254,25 @@
                                     </div>
 
                                     <div 
-                                        className={`p-10 rounded-3xl border shadow-sm leading-relaxed animate-fade-in ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-100'}`}
+                                        className={`p-6 sm:p-10 rounded-3xl border shadow-sm leading-relaxed animate-fade-in whitespace-pre-line ${dark ? 'bg-slate-900 border-slate-800 shadow-black' : 'bg-white border-gray-100'}`}
                                         style={{ fontSize: `${fontSize}px` }}
                                     >
                                         {activeScript.steps[stepIdx].content}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl flex gap-3">
-                                            <Lightbulb className="text-amber-500 shrink-0" size={20} />
+                                        <div className="p-5 bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl flex gap-3 shadow-sm">
+                                            <Lightbulb className="text-amber-500 shrink-0" size={22} />
                                             <div>
-                                                <p className="text-[10px] font-black text-amber-600 uppercase mb-1">Методична підказка</p>
+                                                <p className="text-[10px] font-black text-amber-600 uppercase mb-1 tracking-wider">Підказка менеджеру</p>
                                                 <p className="text-sm text-amber-900 font-medium">{activeScript.steps[stepIdx].hint}</p>
                                             </div>
                                         </div>
                                         {aiHint && (
-                                            <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl flex gap-3 animate-fade-in">
-                                                <Zap className="text-blue-500 shrink-0 fill-blue-500" size={20} />
+                                            <div className="p-5 bg-blue-50 border-l-4 border-blue-400 rounded-r-2xl flex gap-3 animate-fade-in shadow-sm">
+                                                <Zap className="text-blue-500 shrink-0 fill-blue-500" size={22} />
                                                 <div>
-                                                    <p className="text-[10px] font-black text-blue-600 uppercase mb-1">AI Адаптація</p>
+                                                    <p className="text-[10px] font-black text-blue-600 uppercase mb-1 tracking-wider">AI Адаптація</p>
                                                     <p className="text-sm text-blue-900 font-medium">{aiHint}</p>
                                                 </div>
                                             </div>
@@ -242,44 +281,51 @@
                                 </div>
                             </div>
 
-                            <div className="p-6 border-t bg-gray-50 flex justify-between items-center shrink-0">
+                            <div className={`p-4 sm:p-6 border-t flex justify-between items-center shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-gray-50'}`}>
                                 <div className="flex gap-2">
-                                    <button disabled={stepIdx === 0} onClick={() => setStepIdx(i => i-1)} className="px-6 py-2.5 rounded-xl font-bold border-2 disabled:opacity-20 hover:bg-gray-100 transition-all">Назад</button>
-                                    <button disabled={stepIdx === activeScript.steps.length-1} onClick={() => setStepIdx(i => i+1)} className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold disabled:opacity-20 hover:bg-slate-800 transition-all">Наступний крок</button>
+                                    <button disabled={stepIdx === 0} onClick={() => setStepIdx(i => i-1)} className="px-5 py-2.5 rounded-xl font-bold border-2 border-gray-200 hover:bg-white disabled:opacity-20 transition-all text-sm">Назад</button>
+                                    <button disabled={stepIdx === activeScript.steps.length-1} onClick={() => setStepIdx(i => i+1)} className="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-black disabled:opacity-20 transition-all text-sm">Вперед</button>
                                 </div>
-                                <button onClick={getAiAdvice} disabled={loadingAi} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 disabled:bg-blue-400 transition-all">
-                                    <Zap size={18} className={loadingAi ? 'animate-pulse' : ''} />
-                                    {loadingAi ? 'Аналіз...' : 'Адаптувати (AI)'}
+                                <button onClick={getAiAdvice} disabled={loadingAi} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 disabled:bg-blue-300 transition-all text-sm">
+                                    <Zap size={16} className={loadingAi ? 'animate-pulse' : ''} />
+                                    {loadingAi ? 'Аналіз...' : 'AI Порада'}
                                 </button>
                             </div>
                         </main>
 
-                        <aside className={`w-80 border-l flex flex-col shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+                        <aside className={`w-80 border-l flex flex-col shrink-0 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} hidden xl:flex`}>
                             <div className="p-4 border-b flex items-center justify-between">
-                                <h3 className="font-bold text-sm flex items-center gap-2"><MessageSquare size={16} /> Нотатки</h3>
-                                <button className="p-1.5 hover:bg-gray-100 rounded text-gray-400"><Download size={16} /></button>
+                                <h3 className="font-bold text-sm flex items-center gap-2 tracking-tight"><MessageSquare size={16} /> Нотатки (Клієнт)</h3>
+                                <button onClick={handleExport} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400"><Download size={16} /></button>
                             </div>
                             <div className="p-4 space-y-3">
                                 <textarea 
                                     value={noteText} onChange={e => setNoteText(e.target.value)}
-                                    placeholder="Введіть зауваження клієнта..."
-                                    className={`w-full p-3 rounded-xl border text-sm h-28 resize-none outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50'}`}
+                                    placeholder="Що каже клієнт? (Ctrl+Enter)"
+                                    className={`w-full p-3 rounded-2xl border text-sm h-32 resize-none outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}
+                                    onKeyDown={e => { if(e.ctrlKey && e.key === 'Enter') addNote(false); }}
                                 />
                                 <div className="flex gap-2">
-                                    <button onClick={() => addNote(false)} className="flex-1 py-2 bg-slate-100 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">Зберегти</button>
-                                    <button onClick={() => addNote(true)} className="px-3 py-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-all"><Star size={16} /></button>
+                                    <button onClick={() => addNote(false)} className="flex-1 py-2 bg-slate-100 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">Зберегти</button>
+                                    <button onClick={() => addNote(true)} className="px-3 py-2 bg-amber-100 text-amber-600 rounded-xl hover:bg-amber-200 transition-all"><Star size={16} /></button>
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
                                 {notes.map(n => (
-                                    <div key={n.id} className={`p-3 rounded-xl border text-sm animate-fade-in relative group ${n.isKey ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-100'}`}>
+                                    <div key={n.id} className={`p-3 rounded-2xl border text-sm group animate-fade-in relative transition-shadow hover:shadow-sm ${n.isKey ? 'bg-amber-50 border-amber-200 shadow-amber-50' : 'bg-gray-50 border-gray-100'}`}>
                                         <div className="text-[9px] font-bold text-gray-400 mb-1">{n.time}</div>
-                                        <p className="pr-4">{n.content}</p>
+                                        <p className="pr-4 leading-tight">{n.content}</p>
                                         <button onClick={() => setNotes(notes.filter(x => x.id !== n.id))} className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                                             <Trash2 size={12} />
                                         </button>
                                     </div>
                                 ))}
+                                {notes.length === 0 && (
+                                    <div className="h-40 flex flex-col items-center justify-center text-gray-300 opacity-50 italic text-xs">
+                                        <FileText size={24} className="mb-2" />
+                                        Тут будуть записи розмови
+                                    </div>
+                                )}
                             </div>
                         </aside>
                     </div>
