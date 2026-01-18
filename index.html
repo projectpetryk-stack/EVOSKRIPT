@@ -1,48 +1,194 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SalesFlow Pro</title>
+    
+    <!-- Підключаємо Tailwind CSS для стилів -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Babel standalone to compile TSX in the browser for simple static hosting -->
+    
+    <!-- Підключаємо React та Babel з надійних джерел -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
-<script type="importmap">
+    
+    <!-- Lucide Icons через CDN (глобальна змінна lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google GenAI SDK -->
+    <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
   }
 }
 </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <div id="root"></div>
-    <!-- Load index.tsx as a Babel script so it compiles TSX in real-time -->
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+<body class="bg-gray-50">
+    <div id="root">
+        <!-- Початковий стан завантаження, поки Babel компілює код -->
+        <div class="h-screen w-screen flex items-center justify-center bg-white flex-col gap-4">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-500 font-medium">Завантаження SalesFlow Pro...</p>
+        </div>
+    </div>
+
+    <script type="text/babel" data-type="module">
+        import { GoogleGenAI } from "@google/genai";
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // Іконки з бібліотеки Lucide
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const ref = useRef(null);
+            useEffect(() => {
+                if (ref.current) {
+                    ref.current.innerHTML = lucide.createIcons({
+                        icons: { [name]: lucide[name] },
+                        attrs: { strokeWidth: 2, width: size, height: size }
+                    });
+                }
+            }, [name, size]);
+            return <span ref={ref} className={`inline-flex items-center justify-center ${className}`} />;
+        };
+
+        // --- ДАНІ ТА ЛОГІКА ---
+        const INITIAL_SCRIPTS = [
+            {
+                id: '1', title: 'Холодний дзвінок (B2B)', steps: [
+                    { label: 'Привітання', content: 'Добрий день! Мене звати [Ім’я], компанія SalesFlow. Я телефоную з приводу...', hint: 'Говоріть впевнено.' },
+                    { label: 'Кваліфікація', content: 'Скажіть, як ви зараз працюєте зі скриптами?', hint: 'Слухайте клієнта.' }
+                ]
+            },
+            {
+                id: '2', title: 'Обробка "Дорого"', steps: [
+                    { label: 'Пауза', content: 'Розумію вас. А скажіть, будь ласка, з чим ви порівнюєте?', hint: 'Не захищайте ціну одразу.' }
+                ]
+            }
+        ];
+
+        // --- ГОЛОВНИЙ КОМПОНЕНТ ---
+        const App = () => {
+            const [activeScript, setActiveScript] = useState(INITIAL_SCRIPTS[0]);
+            const [stepIndex, setStepIndex] = useState(0);
+            const [notes, setNotes] = useState([]);
+            const [text, setText] = useState("");
+            const [search, setSearch] = useState("");
+            const [dark, setDark] = useState(false);
+
+            const filtered = INITIAL_SCRIPTS.filter(s => s.title.toLowerCase().includes(search.toLowerCase()));
+
+            const saveNote = () => {
+                if (!text.trim()) return;
+                setNotes([{ id: Date.now(), content: text, time: new Date().toLocaleTimeString() }, ...notes]);
+                setText("");
+            };
+
+            return (
+                <div className={`h-screen flex flex-col ${dark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-slate-900'}`}>
+                    <header className={`h-16 px-6 flex items-center justify-between border-b ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200 shadow-sm'}`}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">S</div>
+                            <h1 className="font-bold text-lg">SalesFlow Pro</h1>
+                        </div>
+                        <div className="flex-1 max-w-md mx-8 relative">
+                            <input 
+                                value={search} onChange={e => setSearch(e.target.value)}
+                                placeholder="Шукати скрипт..." 
+                                className={`w-full pl-4 pr-4 py-2 rounded-xl border outline-none ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-transparent'}`}
+                            />
+                        </div>
+                        <button onClick={() => setDark(!dark)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <Icon name={dark ? "Sun" : "Moon"} className={dark ? "text-yellow-400" : "text-gray-500"} />
+                        </button>
+                    </header>
+
+                    <div className="flex-1 flex overflow-hidden">
+                        <aside className={`w-72 border-r p-4 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+                            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Доступні скрипти</h2>
+                            <div className="space-y-2">
+                                {filtered.map(s => (
+                                    <button 
+                                        key={s.id} 
+                                        onClick={() => {setActiveScript(s); setStepIndex(0);}}
+                                        className={`w-full text-left p-3 rounded-xl transition-all font-medium text-sm ${activeScript.id === s.id ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-gray-100'}`}
+                                    >
+                                        {s.title}
+                                    </button>
+                                ))}
+                            </div>
+                        </aside>
+
+                        <main className="flex-1 flex flex-col p-8 overflow-y-auto custom-scrollbar">
+                            <div className="max-w-3xl mx-auto w-full">
+                                <div className="mb-8">
+                                    <h2 className="text-3xl font-extrabold mb-2">{activeScript.title}</h2>
+                                    <div className="flex gap-1 overflow-x-auto no-scrollbar py-2">
+                                        {activeScript.steps.map((s, i) => (
+                                            <button key={i} onClick={() => setStepIndex(i)} className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${stepIndex === i ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}>
+                                                Крок {i + 1}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className={`p-10 rounded-3xl border shadow-sm mb-6 ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-100'}`}>
+                                    <p className="text-xl leading-relaxed">{activeScript.steps[stepIndex].content}</p>
+                                </div>
+
+                                <div className="p-5 bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl flex gap-3 text-amber-800">
+                                    <Icon name="Lightbulb" size={24} className="shrink-0" />
+                                    <div>
+                                        <p className="text-xs font-bold uppercase mb-1">Підказка:</p>
+                                        <p className="text-sm font-medium">{activeScript.steps[stepIndex].hint}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-auto pt-8 flex justify-center gap-4">
+                                <button disabled={stepIndex === 0} onClick={() => setStepIndex(i => i - 1)} className="px-8 py-3 rounded-2xl border-2 font-bold disabled:opacity-20">Назад</button>
+                                <button disabled={stepIndex === activeScript.steps.length - 1} onClick={() => setStepIndex(i => i + 1)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold disabled:opacity-20">Далі</button>
+                            </div>
+                        </main>
+
+                        <aside className={`w-80 border-l p-4 flex flex-col ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+                            <h2 className="font-bold flex items-center gap-2 mb-4 text-sm"><Icon name="MessageSquare" size={16} /> Нотатки</h2>
+                            <textarea 
+                                value={text} onChange={e => setText(e.target.value)}
+                                placeholder="Що відповів клієнт..." 
+                                className={`w-full p-3 rounded-2xl border mb-3 text-sm h-32 outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'}`}
+                            />
+                            <button onClick={saveNote} className="w-full py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-200 mb-6">Зберегти нотатку</button>
+                            
+                            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                                {notes.map(n => (
+                                    <div key={n.id} className={`p-4 rounded-2xl border ${dark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}>
+                                        <div className="text-[10px] font-bold text-gray-400 mb-1">{n.time}</div>
+                                        <p className="text-sm">{n.content}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
