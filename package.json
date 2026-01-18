@@ -1,23 +1,19 @@
+
 {
-  "name": "salesflow-pro---динамічний-конструктор-скриптів",
+  "name": "salesflow-pro",
+  "version": "1.0.0",
+  "description": "Динамічний конструктор скриптів продажів з інтеграцією Gemini AI",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "start": "npx serve .",
+    "deploy": "echo 'Для розгортання просто завантажте файли у гілку gh-pages або налаштуйте GitHub Actions'"
   },
-  "dependencies": {
-    "lucide-react": "^0.562.0",
-    "@google/genai": "^1.37.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
-  }
+  "keywords": [
+    "sales",
+    "scripts",
+    "gemini-ai",
+    "crm-tool"
+  ],
+  "author": "",
+  "license": "MIT"
 }

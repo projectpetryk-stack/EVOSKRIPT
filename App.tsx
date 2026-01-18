@@ -14,7 +14,8 @@ import {
   Sun,
   Moon,
   Trash2,
-  Lightbulb
+  Lightbulb,
+  AlertCircle
 } from 'lucide-react';
 import { Script, Category, Note, UserSettings, ScriptStep } from './types';
 import { INITIAL_SCRIPTS } from './constants';
@@ -35,6 +36,8 @@ const App: React.FC = () => {
     fontSize: 18,
     highContrast: false
   });
+
+  const isApiKeyMissing = !process.env.API_KEY;
 
   // Filtering
   const filteredScripts = useMemo(() => {
@@ -85,9 +88,12 @@ const App: React.FC = () => {
 
   const requestAIHint = async () => {
     if (!activeScript) return;
+    if (isApiKeyMissing) {
+      setAiHint("Помилка: API ключ не знайдено. Будь ласка, налаштуйте оточення.");
+      return;
+    }
     setIsAiLoading(true);
     const step = activeScript.steps[activeStepIndex];
-    // In a real app, we might take actual speech-to-text here
     const hint = await getAIHint(step.content, currentNote || "Клієнт слухає...");
     setAiHint(hint);
     setIsAiLoading(false);
@@ -137,6 +143,14 @@ const App: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {/* API Key Warning Bar */}
+      {isApiKeyMissing && (
+        <div className="bg-red-50 border-b border-red-100 px-6 py-1.5 flex items-center justify-center gap-2 text-red-600 text-xs font-medium animate-in slide-in-from-top duration-500">
+          <AlertCircle size={14} />
+          <span>API ключ не налаштовано. AI-підказки будуть недоступні. Перегляньте README.md для інструкцій.</span>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -262,10 +276,10 @@ const App: React.FC = () => {
                   )}
 
                   {aiHint && (
-                    <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 text-sm flex items-start gap-3 rounded-r-lg animate-in fade-in slide-in-from-left-4 duration-300">
-                      <Zap className="shrink-0 mt-0.5 fill-blue-500" size={18} />
+                    <div className={`mt-6 p-4 border-l-4 text-sm flex items-start gap-3 rounded-r-lg animate-in fade-in slide-in-from-left-4 duration-300 ${aiHint.startsWith('Помилка') ? 'bg-red-50 border-red-400 text-red-800' : 'bg-blue-50 border-blue-400 text-blue-800'}`}>
+                      {aiHint.startsWith('Помилка') ? <AlertCircle className="shrink-0 mt-0.5" size={18} /> : <Zap className="shrink-0 mt-0.5 fill-blue-500" size={18} />}
                       <div>
-                        <span className="font-bold block mb-1">AI-Адаптація:</span>
+                        <span className="font-bold block mb-1">{aiHint.startsWith('Помилка') ? 'Помилка Конфігурації:' : 'AI-Адаптація:'}</span>
                         {aiHint}
                       </div>
                     </div>
@@ -294,7 +308,7 @@ const App: React.FC = () => {
                 <button 
                   onClick={requestAIHint}
                   disabled={isAiLoading}
-                  className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-200"
+                  className={`px-6 py-3 rounded-xl font-bold text-white transition-all flex items-center gap-2 shadow-lg ${isApiKeyMissing ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
                 >
                   <Zap size={18} className={isAiLoading ? 'animate-pulse' : ''} />
                   {isAiLoading ? 'Аналізуємо...' : 'Адаптувати розмову (AI)'}
@@ -382,7 +396,7 @@ const App: React.FC = () => {
       {/* Footer / Status bar */}
       <footer className="h-8 bg-gray-800 text-gray-400 flex items-center justify-between px-6 text-[10px] font-medium shrink-0">
         <div className="flex gap-4">
-          <span className="flex items-center gap-1"><Zap size={12} className="text-green-500" /> AI Активний</span>
+          <span className="flex items-center gap-1"><Zap size={12} className={isApiKeyMissing ? 'text-gray-500' : 'text-green-500'} /> {isApiKeyMissing ? 'AI Вимкнено' : 'AI Активний'}</span>
           <span className="flex items-center gap-1"><Sun size={12} /> Світла тема</span>
         </div>
         <div className="flex gap-4">
